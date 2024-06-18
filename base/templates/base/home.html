@@ -11,9 +11,16 @@
 
     {% block content %}
     
-        <h1>Room Template</h1>
-    
+        <h1>Home template</h1>
+
+        <div>
+            {% for room  in rooms %}
+                <a href="/room/{{room.id}}">{{ room.id }} -- {{ room.name }}</a> <br>           
+            {% endfor %}
+        </div>
+
     {% endblock content %}
 
+    
 </body>
 </html>
