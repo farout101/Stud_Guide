@@ -19,7 +19,7 @@ def loginPage(request):
     
     if request.method == 'POST':
         username = request.POST.get('username').lower()
-        password = request.POST.get('password').lower()
+        password = request.POST.get('password')
         
         try:
             user = User.objects.get(username=username)
@@ -66,14 +66,14 @@ def home(request):
         Q(name__icontains = q) |
         Q(description__icontains = q)
         )
-    
     room_count = rooms.count()
-    
     topics = Topic.objects.all()
+    room_messages = Message.objects.all() 
     context = {
         'rooms': rooms,
         'topics': topics,
-        'room_count': room_count
+        'room_count': room_count,
+        'room_messages': room_messages,
     }
     return render(request, 'base/home.html', context)
 
