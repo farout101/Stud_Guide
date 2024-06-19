@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from base.models import Room, Topic
+from base.models import Room, Topic, Message
 from .forms import RoomForm
 from django.db.models import Q
 from django.contrib.auth.models import User
@@ -8,6 +8,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.contrib.auth.forms import UserCreationForm
+
 
 def loginPage(request):
     
@@ -78,8 +79,22 @@ def home(request):
 
 def room(request,pk):
     room = Room.objects.get(id=pk)
+    room_messages = room.message_set.all().order_by('-created') # This mean give us the set of messages which are related to this room 
+    participants = room.participants.all()
+    
+    if request.method == 'POST':
+        message = Message.objects.create(
+            user = request.user,
+            room = room,
+            body = request.POST.get('body')
+        ) 
+        room.participants.add(request.user) # Add the participant to the room as he interect something with current room
+        return redirect('room', pk=room.id) # Needed to not messed up with the default POST reqeust (This will lead back to the current page with the GET request)
+
     context = {
-        'room': room
+        'room': room,
+        'room_messages': room_messages,
+        'participants': participants
     }
     return render(request, 'base/room.html', context)
 
@@ -122,3 +137,15 @@ def deleteRoom(request,pk):
         room.delete()
         return redirect('home')
     return render(request, 'base/delete.html', {'obj':room})
+
+@login_required(login_url='/login')
+def deleteMessage(request,pk):
+    message = Message.objects.get(id=pk)
+    
+    if request.user != message.user:
+        return HttpResponse('<h1>You are not authorized to delete this message</h1>')
+    
+    if request.method == 'POST':
+        message.delete() 
+        return redirect('room', pk=message.room.id) # same concept as before
+    return render(request, 'base/delete.html', {'obj':message})

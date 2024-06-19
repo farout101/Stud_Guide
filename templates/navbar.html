@@ -16,7 +16,12 @@
 
     </form>
 
+    <br>
+    <a href="{% url 'home' %}">Back to Home</a>
+
     {% if request.user.is_authenticated %}
+
+    <p>Hello "{{request.user}}"</p>
 
     <a href="{% url 'logout' %}">Logout</a>
 
